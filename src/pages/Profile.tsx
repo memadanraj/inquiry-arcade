@@ -1,12 +1,12 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, Bookmark, Award, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 
-// Import new components
+// Import components
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import SavedItems from '@/components/profile/SavedItems';
 import ActivitySection from '@/components/profile/ActivitySection';
@@ -50,7 +50,15 @@ const achievements = [
 
 const Profile = () => {
   // Theme provider hook
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  
+  // Detect system preference on mount
+  useEffect(() => {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark && !theme) {
+      setTheme('dark');
+    }
+  }, [theme, setTheme]);
 
   // This would come from authentication system in a real app
   const user = {
@@ -63,7 +71,7 @@ const Profile = () => {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -81,25 +89,25 @@ const Profile = () => {
             aria-label="Toggle theme"
             className="rounded-full"
           >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
         </div>
         
         <ProfileHeader user={user} />
         
-        <Tabs defaultValue="saved">
+        <Tabs defaultValue="activity" className="mt-8">
           <TabsList className="mb-6">
-            <TabsTrigger value="saved">Saved Items</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="saved">Saved Items</TabsTrigger>
             <TabsTrigger value="achievements">Achievements</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="saved">
-            <SavedItems savedMaterials={savedMaterials} savedQuestions={savedQuestions} />
+          <TabsContent value="activity">
+            <ActivitySection userHasActivity={true} />
           </TabsContent>
           
-          <TabsContent value="activity">
-            <ActivitySection />
+          <TabsContent value="saved">
+            <SavedItems savedMaterials={savedMaterials} savedQuestions={savedQuestions} />
           </TabsContent>
           
           <TabsContent value="achievements">
