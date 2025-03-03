@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Bookmark, Award, Settings, FileText } from 'lucide-react';
+import { User, Bookmark, Award, Settings, FileText, MessageSquare, Trophy } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import MaterialCard from '@/components/study/MaterialCard';
 import QuestionCard from '@/components/qa/QuestionCard';
@@ -41,7 +41,7 @@ const savedQuestions = [
 
 const achievements = [
   { name: 'First Question', description: 'Asked your first question', icon: <MessageSquare className="h-5 w-5" /> },
-  { name: 'Knowledge Sharer', description: 'Saved 5 study materials', icon: <BookMark className="h-5 w-5" /> },
+  { name: 'Knowledge Sharer', description: 'Saved 5 study materials', icon: <Bookmark className="h-5 w-5" /> },
   { name: 'Rising Star', description: 'Received 10 upvotes on your answers', icon: <Award className="h-5 w-5" /> },
 ];
 
