@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BookText, BookOpen, FileText, Calendar } from 'lucide-react';
+import { BookText, BookOpen, FileText, Calendar, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GlassCard from '../ui/GlassCard';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ export interface MaterialCardProps {
   lastUpdated: string;
   popularity: number;
   tags: string[];
+  isPremium?: boolean;
   onClick?: () => void;
 }
 
@@ -30,6 +31,7 @@ const MaterialCard = ({
   year,
   lastUpdated,
   tags,
+  isPremium = false,
   onClick,
 }: MaterialCardProps) => {
   const getIcon = () => {
@@ -63,9 +65,18 @@ const MaterialCard = ({
 
   return (
     <GlassCard
-      className="transition-all duration-300 hover:shadow-lg overflow-hidden cursor-pointer animate-slide-in-bottom"
+      className={cn(
+        "transition-all duration-300 hover:shadow-lg overflow-hidden cursor-pointer animate-slide-in-bottom",
+        isPremium && "border-amber-200 border-opacity-50"
+      )}
       onClick={onClick}
     >
+      {isPremium && (
+        <div className="absolute -right-8 top-5 rotate-45 bg-amber-500 text-amber-50 text-xs py-1 px-10 shadow-md">
+          Premium
+        </div>
+      )}
+      
       <div className="flex items-start gap-4">
         <div className={cn(
           "p-3 rounded-md",
@@ -85,6 +96,12 @@ const MaterialCard = ({
             <Badge variant="secondary" className="text-xs font-normal">
               {subject}
             </Badge>
+            {isPremium && (
+              <Badge variant="outline" className="text-xs font-normal bg-amber-50 text-amber-700 border-amber-200 gap-1">
+                <Crown className="h-3 w-3" />
+                Premium
+              </Badge>
+            )}
           </div>
           
           <h3 className="font-semibold text-lg mb-1 truncate">{title}</h3>

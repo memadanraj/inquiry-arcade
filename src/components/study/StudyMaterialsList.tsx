@@ -10,10 +10,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, CrownIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 // Mock data
-const generateMockMaterials = (): MaterialCardProps[] => {
+const generateMockMaterials = (): (MaterialCardProps & { isPremium?: boolean })[] => {
   const types: MaterialType[] = ['note', 'solution', 'oldQuestion', 'preboard'];
   const subjects = ['Mathematics', 'Computer Science', 'Business Communication', 'Economics', 'Finance'];
   const courses = ['BBA', 'BIM', 'BBS', '+2 Science', '+2 Management'];
@@ -22,6 +24,7 @@ const generateMockMaterials = (): MaterialCardProps[] => {
   return Array.from({ length: 12 }, (_, i) => {
     const type = types[Math.floor(Math.random() * types.length)];
     const usesSemester = ['BBA', 'BIM', 'BBS'].includes(courses[i % courses.length]);
+    const isPremium = i % 3 === 0; // Every third item is premium
     
     return {
       id: `material-${i}`,
@@ -37,6 +40,7 @@ const generateMockMaterials = (): MaterialCardProps[] => {
         { length: 2 + Math.floor(Math.random() * 4) },
         (_, j) => tags[(i + j) % tags.length]
       ),
+      isPremium,
     };
   });
 };
@@ -50,6 +54,7 @@ const StudyMaterialsList = ({ initialFilter = 'all' }: StudyMaterialsListProps) 
   const [materialType, setMaterialType] = useState<MaterialType | 'all'>(initialFilter);
   const [course, setCourse] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('recent');
+  const [showPremiumOnly, setShowPremiumOnly] = useState(false);
   
   const allMaterials = generateMockMaterials();
   
@@ -62,8 +67,9 @@ const StudyMaterialsList = ({ initialFilter = 'all' }: StudyMaterialsListProps) 
     
     const matchesType = materialType === 'all' || material.type === materialType;
     const matchesCourse = course === 'all' || material.course === course;
+    const matchesPremium = !showPremiumOnly || material.isPremium;
     
-    return matchesSearch && matchesType && matchesCourse;
+    return matchesSearch && matchesType && matchesCourse && matchesPremium;
   });
   
   // Apply sorting
@@ -112,8 +118,32 @@ const StudyMaterialsList = ({ initialFilter = 'all' }: StudyMaterialsListProps) 
               <SelectItem value="popular">Most Popular</SelectItem>
             </SelectContent>
           </Select>
+
+          <Button
+            variant={showPremiumOnly ? "default" : "outline"}
+            size="icon"
+            onClick={() => setShowPremiumOnly(!showPremiumOnly)}
+            className="relative"
+            title={showPremiumOnly ? "Show all content" : "Show premium content only"}
+          >
+            <CrownIcon className="h-4 w-4" />
+          </Button>
         </div>
       </div>
+
+      {showPremiumOnly && (
+        <div className="bg-amber-50 border border-amber-200 rounded-md p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CrownIcon className="h-5 w-5 text-amber-500" />
+            <p className="text-sm text-amber-700">
+              Showing premium content only. Some premium content may require a subscription.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" className="text-amber-700 border-amber-300 hover:bg-amber-100">
+            Get Premium
+          </Button>
+        </div>
+      )}
       
       <Tabs defaultValue={materialType} onValueChange={(v) => setMaterialType(v as MaterialType | 'all')}>
         <TabsList className="bg-transparent h-auto p-0 mb-6">
@@ -157,6 +187,7 @@ const StudyMaterialsList = ({ initialFilter = 'all' }: StudyMaterialsListProps) 
                   <MaterialCard
                     key={material.id}
                     {...material}
+                    isPremium={material.isPremium}
                     onClick={() => console.log(`Clicked on ${material.title}`)}
                   />
                 ))}

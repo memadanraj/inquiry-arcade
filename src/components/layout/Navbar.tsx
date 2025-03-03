@@ -3,15 +3,17 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { BookOpen, BookText, MessageSquare, User, Search } from 'lucide-react';
+import { BookOpen, BookText, MessageSquare, User, Search, Bell } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AnimatePresence, motion } from 'framer-motion';
 import AuthModal from './AuthModal';
+import NotificationDropdown from './NotificationDropdown';
 
 const Navbar = () => {
   const location = useLocation();
   const [showSearch, setShowSearch] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -78,16 +80,46 @@ const Navbar = () => {
               )}
             </AnimatePresence>
 
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="hidden md:flex"
-              as={Link}
-              to="/profile"
-              aria-label="Profile"
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowNotifications(prev => !prev)}
+                aria-label="Notifications"
+                className="relative"
+              >
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1 right-1.5 flex h-2 w-2 rounded-full bg-red-500"></span>
+              </Button>
+              
+              {showNotifications && (
+                <NotificationDropdown 
+                  onClose={() => setShowNotifications(false)}
+                />
+              )}
+            </div>
+
+            <div className="hidden md:flex">
+              <Link 
+                to="/profile"
+                aria-label="Profile"
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "icon" })
+                )}
+              >
+                <User className="h-5 w-5" />
+              </Link>
+            </div>
+
+            <Link
+              to="/leaderboard"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "hidden md:inline-flex"
+              )}
             >
-              <User className="h-5 w-5" />
-            </Button>
+              Rankings
+            </Link>
 
             <Button 
               variant="default" 
