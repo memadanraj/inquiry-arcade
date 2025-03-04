@@ -34,7 +34,9 @@ import {
   Sparkles, 
   Trash2, 
   Upload, 
-  Users
+  Users,
+  Eye,
+  Edit
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import { toast } from 'sonner';
