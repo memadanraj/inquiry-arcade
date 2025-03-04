@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { FileText, Star, BarChart2, ArrowUp, MessageSquare } from 'lucide-react';
+import { FileText, Star, BarChart2, ArrowUp, MessageSquare, FileIcon, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GlassCard from '@/components/ui/GlassCard';
@@ -52,7 +51,8 @@ const mockResults = [
     date: "2023-09-20",
     score: 85,
     totalMarks: 100,
-    rank: 15
+    rank: 15,
+    pdfUrl: "https://example.com/results/midterm-cs.pdf"
   },
   {
     id: 2,
@@ -61,7 +61,18 @@ const mockResults = [
     date: "2023-10-15",
     score: 92,
     totalMarks: 100,
-    rank: 8
+    rank: 8,
+    pdfUrl: "https://example.com/results/final-math.pdf"
+  },
+  {
+    id: 3,
+    examName: "Spring Semester Results",
+    subject: "Business Management",
+    date: "2023-12-05",
+    score: 78,
+    totalMarks: 100,
+    rank: 22,
+    pdfUrl: "https://example.com/results/spring-bba.pdf"
   }
 ];
 
@@ -160,13 +171,22 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({ userHasActivity = tru
                 <div>
                   <h3 className="font-medium text-lg">{result.examName}</h3>
                   <p className="text-muted-foreground text-sm">
-                    Subject: {result.subject} • Taken on {result.date}
+                    Subject: {result.subject} • Posted on {result.date}
                   </p>
                 </div>
-                <div className="mt-2 md:mt-0">
+                <div className="mt-2 md:mt-0 flex items-center gap-2">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                     Rank: {result.rank}
                   </span>
+                  <a 
+                    href={result.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    View PDF
+                  </a>
                 </div>
               </div>
               
@@ -184,10 +204,16 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({ userHasActivity = tru
               </div>
               
               <div className="mt-4 flex justify-end">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <BarChart2 className="h-4 w-4" />
-                  View Analysis
-                </Button>
+                <a 
+                  href={result.pdfUrl}
+                  download
+                  className="inline-flex items-center gap-2 text-primary hover:underline"
+                >
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <Download className="h-4 w-4" />
+                    Download PDF
+                  </Button>
+                </a>
               </div>
             </GlassCard>
           ))}
