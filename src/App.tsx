@@ -13,6 +13,7 @@ import StudyMaterials from "@/pages/StudyMaterials";
 import QandA from "@/pages/QandA";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const AppRoutes = () => {
         <Route path="/study-materials" element={<StudyMaterials />} />
         <Route path="/q-and-a" element={<QandA />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
