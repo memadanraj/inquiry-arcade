@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { BookOpen, BookText, MessageSquare, User } from 'lucide-react';
+import { BookOpen, BookText, MessageSquare, User, FileText } from 'lucide-react';
 
 const MobileNav = () => {
   const location = useLocation();
@@ -11,6 +11,7 @@ const MobileNav = () => {
     { name: 'Home', path: '/', icon: BookOpen },
     { name: 'Study', path: '/study-materials', icon: BookText },
     { name: 'Q&A', path: '/q-and-a', icon: MessageSquare },
+    { name: 'Results', path: '/results', icon: FileText },
     { name: 'Profile', path: '/profile', icon: User },
   ];
 

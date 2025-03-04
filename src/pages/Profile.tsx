@@ -1,10 +1,8 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Bookmark, Award, Sun, Moon } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
+import { MessageSquare, Bookmark, Award } from 'lucide-react';
 
 // Import components
 import ProfileHeader from '@/components/profile/ProfileHeader';
@@ -49,17 +47,6 @@ const achievements = [
 ];
 
 const Profile = () => {
-  // Theme provider hook
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  
-  // Detect system preference on mount
-  useEffect(() => {
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (prefersDark && !theme) {
-      setTheme('dark');
-    }
-  }, [theme, setTheme]);
-
   // This would come from authentication system in a real app
   const user = {
     name: 'John Doe',
@@ -70,10 +57,6 @@ const Profile = () => {
     rank: 'Scholar',
   };
 
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
-  };
-
   return (
     <div className="container py-8 md:py-12">
       <motion.div
@@ -81,18 +64,6 @@ const Profile = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex justify-end mb-4">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={toggleTheme} 
-            aria-label="Toggle theme"
-            className="rounded-full"
-          >
-            {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-        </div>
-        
         <ProfileHeader user={user} />
         
         <Tabs defaultValue="activity" className="mt-8">

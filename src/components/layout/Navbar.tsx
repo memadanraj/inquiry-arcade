@@ -3,17 +3,25 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { BookOpen, BookText, MessageSquare, User, Search, Bell } from 'lucide-react';
+import { BookOpen, BookText, MessageSquare, User, Search, Bell, FileText, Sun, Moon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AnimatePresence, motion } from 'framer-motion';
 import AuthModal from './AuthModal';
 import NotificationDropdown from './NotificationDropdown';
+import { useTheme } from 'next-themes';
 
 const Navbar = () => {
   const location = useLocation();
   const [showSearch, setShowSearch] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  
+  // Theme provider hook
+  const { theme, setTheme, resolvedTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -21,6 +29,7 @@ const Navbar = () => {
     { name: 'Home', path: '/', icon: BookOpen },
     { name: 'Study Materials', path: '/study-materials', icon: BookText },
     { name: 'Q&A', path: '/q-and-a', icon: MessageSquare },
+    { name: 'Results', path: '/results', icon: FileText },
   ];
 
   return (
@@ -80,6 +89,16 @@ const Navbar = () => {
               )}
             </AnimatePresence>
 
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleTheme} 
+              aria-label="Toggle theme"
+              className="relative"
+            >
+              {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+
             <div className="relative">
               <Button
                 variant="ghost"
@@ -112,7 +131,7 @@ const Navbar = () => {
             </div>
 
             <Link
-              to="/leaderboard"
+              to="/rankings"
               className={cn(
                 buttonVariants({ variant: "outline", size: "sm" }),
                 "hidden md:inline-flex"
