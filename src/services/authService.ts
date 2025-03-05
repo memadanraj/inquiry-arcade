@@ -25,6 +25,13 @@ export const authService = {
   removeAccount: async (): Promise<ApiResponse<any>> => {
     const response = await api.delete('/api/userinfo/user/removeAcc');
     return response.data;
+  },
+  
+  validateToken: async (): Promise<ApiResponse<any>> => {
+    // This endpoint would be used to validate tokens on app startup
+    // You may need to adjust this based on your actual API
+    const response = await api.get('/api/userinfo/user/validate');
+    return response.data;
   }
 };
 

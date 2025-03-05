@@ -36,11 +36,14 @@ api.interceptors.response.use(
     const message = error.response?.data?.message || 'An unexpected error occurred';
     
     if (error.response?.status === 401) {
-      // Handle unauthorized access
+      // Handle unauthorized access - token expired or invalid
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_info');
       toast.error('Your session has expired. Please login again.');
       window.location.href = '/';
+    } else if (error.response?.status === 403) {
+      // Handle forbidden access - user doesn't have permission
+      toast.error('You do not have permission to perform this action');
     } else {
       toast.error(message);
     }
@@ -57,7 +60,7 @@ export const fileApi = axios.create({
   },
 });
 
-// Apply same interceptors to fileApi
+// Apply same JWT token logic to fileApi
 fileApi.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token');
@@ -78,7 +81,17 @@ fileApi.interceptors.response.use(
   (error) => {
     console.error('API Error:', error);
     const message = error.response?.data?.message || 'An unexpected error occurred';
-    toast.error(message);
+    
+    if (error.response?.status === 401) {
+      // Handle unauthorized access for file uploads
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_info');
+      toast.error('Your session has expired. Please login again.');
+      window.location.href = '/';
+    } else {
+      toast.error(message);
+    }
+    
     return Promise.reject(error);
   }
 );

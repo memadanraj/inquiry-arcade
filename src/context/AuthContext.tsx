@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { authService } from '@/services/authService';
 import { LoginRequestDto } from '@/types/api';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   id: number;
@@ -26,34 +27,60 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
+  // Check for existing token and validate it
   useEffect(() => {
-    // Check if user is already logged in
-    const storedUser = localStorage.getItem('user_info');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user info:', error);
-        localStorage.removeItem('user_info');
-        localStorage.removeItem('auth_token');
-      }
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
+
+    const validateToken = async () => {
+      try {
+        // Try to validate the token and get user info
+        const storedUser = localStorage.getItem('user_info');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        } else {
+          // If no stored user but we have a token, we could fetch user info here
+          // await fetchUserProfile();
+        }
+      } catch (error) {
+        console.error('Token validation failed:', error);
+        // Clear invalid credentials
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_info');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    validateToken();
   }, []);
 
   const login = async (credentials: LoginRequestDto) => {
     setIsLoading(true);
     try {
       const response = await authService.login(credentials);
-      // Assuming the response contains token and user data
-      const { token, user } = response.data;
       
-      localStorage.setItem('auth_token', token);
-      localStorage.setItem('user_info', JSON.stringify(user));
-      
-      setUser(user);
-      toast.success('Login successful!');
+      // Check if response contains token and user data
+      if (response.data?.token) {
+        // Store JWT token and user info
+        const { token, user } = response.data;
+        
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('user_info', JSON.stringify(user));
+        
+        setUser(user);
+        toast.success('Login successful!');
+        
+        // Navigate to dashboard or home after successful login
+        navigate('/');
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error) {
       console.error('Login failed:', error);
       toast.error('Login failed. Please check your credentials.');
@@ -82,6 +109,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('user_info');
     setUser(null);
     toast.info('You have been logged out.');
+    
+    // Navigate to home page after logout
+    navigate('/');
   };
 
   const changePassword = async (newPassword: string) => {

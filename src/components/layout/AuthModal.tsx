@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Dialog, 
@@ -66,7 +65,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       onClose();
     } catch (error) {
       console.error('Login error:', error);
-      // Toast message already shown in auth service
+      // Error toast is shown in auth service
     } finally {
       setIsLoading(false);
     }
@@ -89,10 +88,16 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         registerData.password
       );
       setActiveTab('login');
+      setRegisterData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
+      });
       toast.success('Registration successful! Please log in.');
     } catch (error) {
       console.error('Registration error:', error);
-      // Toast message already shown in auth service
+      // Error toast is shown in auth service
     } finally {
       setIsLoading(false);
     }
