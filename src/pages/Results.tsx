@@ -1,10 +1,18 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import GlassCard from '@/components/ui/GlassCard';
 import ResultsList from '@/components/profile/activity/ResultsList';
+import { resultsService } from '@/services/resultsService';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Results = () => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['results'],
+    queryFn: resultsService.getAllResults
+  });
+
   return (
     <div className="container py-8 md:py-12">
       <motion.div
@@ -20,7 +28,19 @@ const Results = () => {
         </div>
         
         <GlassCard className="p-6">
-          <ResultsList />
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : error ? (
+            <div className="text-center p-4 text-red-500">
+              Failed to load results. Please try again later.
+            </div>
+          ) : (
+            <ResultsList results={data} />
+          )}
         </GlassCard>
       </motion.div>
     </div>
