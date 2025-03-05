@@ -3,8 +3,11 @@ import React from 'react';
 import { Download, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/ui/GlassCard';
+import { useQuery } from '@tanstack/react-query';
+import { resultsService } from '@/services/resultsService';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Mock data for demonstration
+// Mock data for fallback if API call fails
 const mockResults = [
   {
     id: 1,
@@ -39,9 +42,39 @@ const mockResults = [
 ];
 
 const ResultsList: React.FC = () => {
+  // When used inside tabs, fetch results directly
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['results'],
+    queryFn: resultsService.getAllResults,
+    enabled: true // Enable the query to run immediately
+  });
+
+  // Use fetched data or fallback to mock data
+  const resultsData = data?.data || mockResults;
+
+  // Show loading state if query is running
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    );
+  }
+
+  // Show error state if query failed
+  if (error) {
+    return (
+      <div className="text-center p-4 text-red-500">
+        Failed to load results. Please try again later.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {mockResults.map(result => (
+      {resultsData.map(result => (
         <GlassCard key={result.id} className="p-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3">
             <div>

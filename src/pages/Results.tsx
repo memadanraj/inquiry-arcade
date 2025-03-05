@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import GlassCard from '@/components/ui/GlassCard';
@@ -39,7 +39,7 @@ const Results = () => {
               Failed to load results. Please try again later.
             </div>
           ) : (
-            <ResultsList results={data} />
+            <ResultsList />
           )}
         </GlassCard>
       </motion.div>
