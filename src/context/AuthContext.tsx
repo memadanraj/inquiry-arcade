@@ -2,20 +2,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { authService } from '@/services/authService';
-import { LoginRequestDto } from '@/types/api';
+import { LoginRequestDto, ApiResponse, AuthResponse, User } from '@/types/api';
 import { useNavigate } from 'react-router-dom';
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  roles: string[];
-}
-
-interface AuthContextType {
+interface AuthState {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+}
+
+interface AuthContextType extends AuthState {
   login: (credentials: LoginRequestDto) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -25,121 +21,178 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [authState, setAuthState] = useState<AuthState>({
+    user: null,
+    isLoading: true,
+    isAuthenticated: false
+  });
   const navigate = useNavigate();
 
   // Check for existing token and validate it
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
+    const validateSession = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setAuthState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
 
-    const validateToken = async () => {
       try {
         // Try to validate the token and get user info
         const storedUser = localStorage.getItem('user_info');
         if (storedUser) {
-          setUser(JSON.parse(storedUser));
+          const user = JSON.parse(storedUser);
+          setAuthState({
+            user,
+            isLoading: false,
+            isAuthenticated: true
+          });
         } else {
           // If no stored user but we have a token, we could fetch user info here
-          // await fetchUserProfile();
+          // Uncomment when API endpoint is available
+          // const userInfo = await authService.validateToken();
+          // if (userInfo.data) {
+          //   setAuthState({
+          //     user: userInfo.data,
+          //     isLoading: false,
+          //     isAuthenticated: true
+          //   });
+          // }
         }
       } catch (error) {
         console.error('Token validation failed:', error);
-        // Clear invalid credentials
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_info');
+        handleAuthError(error);
       } finally {
-        setIsLoading(false);
+        setAuthState(prev => ({ ...prev, isLoading: false }));
       }
     };
 
-    validateToken();
+    validateSession();
   }, []);
 
+  const handleAuthError = (error: any) => {
+    // Clear invalid credentials
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_info');
+    
+    setAuthState({
+      user: null,
+      isLoading: false,
+      isAuthenticated: false
+    });
+    
+    // More granular error handling
+    if (error.response) {
+      const status = error.response.status;
+      if (status === 401) {
+        toast.error('Authentication failed: Invalid credentials');
+      } else if (status === 403) {
+        toast.error('Access denied: You do not have permission to perform this action');
+      } else if (status === 429) {
+        toast.error('Too many attempts: Please try again later');
+      } else {
+        const message = error.response.data?.message || 'An error occurred during authentication';
+        toast.error(message);
+      }
+    } else if (error.request) {
+      toast.error('Network error: Please check your connection and try again');
+    } else {
+      toast.error('Authentication error: ' + (error.message || 'An unexpected error occurred'));
+    }
+  };
+
   const login = async (credentials: LoginRequestDto) => {
-    setIsLoading(true);
+    setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
       const response = await authService.login(credentials);
       
-      // Check if response contains token and user data
-      if (response.data?.token) {
-        // Store JWT token and user info
-        const { token, user } = response.data;
-        
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('user_info', JSON.stringify(user));
-        
-        setUser(user);
-        toast.success('Login successful!');
-        
-        // Navigate to dashboard or home after successful login
-        navigate('/');
-      } else {
-        throw new Error('Invalid response from server');
-      }
+      // Handle successful login
+      handleSuccessfulAuth(response);
+      navigate('/');
     } catch (error) {
       console.error('Login failed:', error);
-      toast.error('Login failed. Please check your credentials.');
+      handleAuthError(error);
       throw error;
     } finally {
-      setIsLoading(false);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
   const register = async (name: string, email: string, password: string) => {
-    setIsLoading(true);
+    setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
       await authService.register(name, password, email);
       toast.success('Registration successful! Please login.');
     } catch (error) {
       console.error('Registration failed:', error);
-      toast.error('Registration failed. Please try again.');
+      handleAuthError(error);
       throw error;
     } finally {
-      setIsLoading(false);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
+  const handleSuccessfulAuth = (response: ApiResponse<AuthResponse>) => {
+    // Check if response contains token and user data
+    if (response.data?.token) {
+      // Store JWT token and user info
+      const { token, user } = response.data;
+      
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('user_info', JSON.stringify(user));
+      
+      setAuthState({
+        user,
+        isLoading: false,
+        isAuthenticated: true
+      });
+      
+      toast.success('Login successful!');
+    } else {
+      throw new Error('Invalid response from server');
     }
   };
 
   const logout = () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_info');
-    setUser(null);
-    toast.info('You have been logged out.');
     
-    // Navigate to home page after logout
+    setAuthState({
+      user: null,
+      isLoading: false,
+      isAuthenticated: false
+    });
+    
+    toast.info('You have been logged out.');
     navigate('/');
   };
 
   const changePassword = async (newPassword: string) => {
-    setIsLoading(true);
+    setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
       await authService.changePassword(newPassword);
       toast.success('Password changed successfully!');
     } catch (error) {
       console.error('Password change failed:', error);
-      toast.error('Failed to change password. Please try again.');
+      handleAuthError(error);
       throw error;
     } finally {
-      setIsLoading(false);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
+  const contextValue: AuthContextType = {
+    user: authState.user,
+    isLoading: authState.isLoading,
+    isAuthenticated: authState.isAuthenticated,
+    login,
+    register,
+    logout,
+    changePassword
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        login,
-        register,
-        logout,
-        changePassword
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

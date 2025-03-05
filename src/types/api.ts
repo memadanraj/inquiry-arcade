@@ -74,19 +74,18 @@ export interface ApiResponse<T> {
   status?: number;
 }
 
-export interface AuthResponse {
-  token: string;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    roles: string[];
-  };
-}
-
-export interface UserProfile {
+export interface User {
   id: number;
   name: string;
   email: string;
   roles: string[];
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+export interface UserProfile extends User {
+  // Additional profile fields can be added here
 }
