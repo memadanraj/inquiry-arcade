@@ -1,97 +1,38 @@
 
-import axios from 'axios';
-import { toast } from 'sonner';
+import axios, { AxiosInstance } from 'axios';
+import { API_URL, HEADERS } from './apiConfig';
+import { addAuthInterceptor, addResponseInterceptor } from './apiInterceptors';
 
-const API_URL = 'http://localhost:8081';
+/**
+ * Create and configure main API instance
+ */
+export const createApiInstance = (): AxiosInstance => {
+  const instance = axios.create({
+    baseURL: API_URL,
+    headers: HEADERS.DEFAULT,
+  });
 
-export const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+  return instance;
+};
 
-// Add a request interceptor to include auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+/**
+ * Create and configure file upload API instance
+ */
+export const createFileApiInstance = (): AxiosInstance => {
+  const instance = axios.create({
+    baseURL: API_URL,
+    headers: HEADERS.MULTIPART,
+  });
 
-// Add a response interceptor for error handling
-api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    console.error('API Error:', error);
-    
-    const message = error.response?.data?.message || 'An unexpected error occurred';
-    
-    if (error.response?.status === 401) {
-      // Handle unauthorized access - token expired or invalid
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_info');
-      toast.error('Your session has expired. Please login again.');
-      window.location.href = '/';
-    } else if (error.response?.status === 403) {
-      // Handle forbidden access - user doesn't have permission
-      toast.error('You do not have permission to perform this action');
-    } else {
-      toast.error(message);
-    }
-    
-    return Promise.reject(error);
-  }
-);
+  return instance;
+};
 
-// File upload API instance with different content type
-export const fileApi = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'multipart/form-data',
-  },
-});
+// Initialize API instances
+export const api = createApiInstance();
+export const fileApi = createFileApiInstance();
 
-// Apply same JWT token logic to fileApi
-fileApi.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-fileApi.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    console.error('API Error:', error);
-    const message = error.response?.data?.message || 'An unexpected error occurred';
-    
-    if (error.response?.status === 401) {
-      // Handle unauthorized access for file uploads
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_info');
-      toast.error('Your session has expired. Please login again.');
-      window.location.href = '/';
-    } else {
-      toast.error(message);
-    }
-    
-    return Promise.reject(error);
-  }
-);
+// Apply interceptors
+addAuthInterceptor(api);
+addResponseInterceptor(api);
+addAuthInterceptor(fileApi);
+addResponseInterceptor(fileApi);
