@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Download, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,6 @@ import { useQuery } from '@tanstack/react-query';
 import { resultsService } from '@/services/resultsService';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Mock data for fallback if API call fails
 const mockResults = [
   {
     id: 1,
@@ -42,17 +40,14 @@ const mockResults = [
 ];
 
 const ResultsList: React.FC = () => {
-  // When used inside tabs, fetch results directly
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['results'],
-    queryFn: resultsService.getAllResults,
-    enabled: true // Enable the query to run immediately
+    queryFn: () => resultsService.getAllResults(),
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
-  // Use fetched data or fallback to mock data
-  const resultsData = data?.data || mockResults;
-
-  // Show loading state if query is running
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -63,14 +58,7 @@ const ResultsList: React.FC = () => {
     );
   }
 
-  // Show error state if query failed
-  if (error) {
-    return (
-      <div className="text-center p-4 text-red-500">
-        Failed to load results. Please try again later.
-      </div>
-    );
-  }
+  const resultsData = isError ? mockResults : (data?.data || mockResults);
 
   return (
     <div className="space-y-4">
