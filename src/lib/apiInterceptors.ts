@@ -31,7 +31,9 @@ export const addResponseInterceptor = (axiosInstance: AxiosInstance): void => {
     (error: AxiosError): Promise<AxiosError> => {
       console.error('API Error:', error);
       
-      const message = error.response?.data?.message || 'An unexpected error occurred';
+      // Fix TypeScript error by properly type-checking the error.response?.data
+      const errorData = error.response?.data as { message?: string } | undefined;
+      const message = errorData?.message || 'An unexpected error occurred';
       
       if (error.response?.status === 401) {
         // Handle unauthorized access - token expired or invalid

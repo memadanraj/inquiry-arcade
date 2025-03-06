@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, Bookmark, Award } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Import components
-import ProfileHeader from '@/components/profile/ProfileHeader';
+import UserProfileSection from '@/components/profile/UserProfileSection';
 import SavedItems from '@/components/profile/SavedItems';
 import ActivitySection from '@/components/profile/ActivitySection';
 import AchievementsSection from '@/components/profile/AchievementsSection';
@@ -47,15 +49,19 @@ const achievements = [
 ];
 
 const Profile = () => {
-  // This would come from authentication system in a real app
-  const user = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    avatar: undefined,
-    joinDate: 'May 2023',
-    reputation: 120,
-    rank: 'Scholar',
-  };
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirect to home if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (!user) {
+    return null; // Or a loading state
+  }
 
   return (
     <div className="container py-8 md:py-12">
@@ -64,7 +70,7 @@ const Profile = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <ProfileHeader user={user} />
+        <UserProfileSection user={user} />
         
         <Tabs defaultValue="activity" className="mt-8">
           <TabsList className="mb-6">

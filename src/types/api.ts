@@ -79,6 +79,11 @@ export interface User {
   name: string;
   email: string;
   roles: string[];
+  bio?: string;
+  avatar?: string;
+  joinDate?: string;
+  reputation?: number;
+  rank?: string;
 }
 
 export interface AuthResponse {
@@ -88,4 +93,12 @@ export interface AuthResponse {
 
 export interface UserProfile extends User {
   // Additional profile fields can be added here
+  bio?: string;
+  location?: string;
+  website?: string;
+  socialLinks?: {
+    twitter?: string;
+    linkedin?: string;
+    github?: string;
+  };
 }

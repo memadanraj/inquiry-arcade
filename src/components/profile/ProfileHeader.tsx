@@ -14,9 +14,10 @@ interface ProfileHeaderProps {
     reputation: number;
     rank: string;
   };
+  onEditProfile?: () => void;
 }
 
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEditProfile }) => {
   return (
     <div className="flex flex-col md:flex-row gap-6 md:gap-10 mb-8">
       <div className="flex flex-col items-center md:items-start gap-4">
@@ -61,7 +62,10 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
             <Settings className="h-4 w-4 mr-2" />
             Settings
           </Button>
-          <Button size="sm">
+          <Button 
+            size="sm"
+            onClick={onEditProfile}
+          >
             Edit Profile
           </Button>
         </div>
